@@ -1,0 +1,231 @@
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Book, Wishlist, User } from "@/entities/all";
+import { BookOpen, Heart, Library, Star, TrendingUp, Users, Eye } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export default function AnimatedHeader({ title, subtitle }) {
+  const [stats, setStats] = useState({
+    totalBooks: 0,
+    totalWishlist: 0,
+    averageRating: 0,
+    totalViews: 0,
+    popularCategory: "fiksi"
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadHeaderStats();
+  }, []);
+
+  const loadHeaderStats = async () => {
+    try {
+      const [books, wishlistItems] = await Promise.all([
+        Book.list("-created_date", 100),
+        Wishlist.list("-created_date", 50)
+      ]);
+
+      const averageRating = books.reduce((sum, book) => sum + (book.rating || 0), 0) / (books.length || 1);
+      const totalViews = books.reduce((sum, book) => sum + (book.views || 0), 0);
+      
+      // Find most popular category
+      const categoryCount = books.reduce((acc, book) => {
+        acc[book.topic] = (acc[book.topic] || 0) + 1;
+        return acc;
+      }, {});
+      const popularCategory = Object.keys(categoryCount).reduce((a, b) => 
+        categoryCount[a] > categoryCount[b] ? a : b, "fiksi"
+      );
+
+      setStats({
+        totalBooks: books.length,
+        totalWishlist: wishlistItems.length,
+        averageRating: averageRating,
+        totalViews: totalViews,
+        popularCategory: popularCategory
+      });
+    } catch (error) {
+      console.error("Error loading header stats:", error);
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="relative bg-gradient-to-br from-sky-400 via-blue-500 to-cyan-600 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        <motion.div
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1] 
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.15, 0.25, 0.15] 
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          className="absolute bottom-0 right-1/4 w-80 h-80 bg-cyan-300 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            x: [-20, 20, -20],
+            y: [-10, 10, -10],
+            rotate: [0, 360]
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-300/20 rounded-full blur-2xl"
+        />
+      </div>
+
+      {/* Floating Icons */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          animate={{ 
+            y: [0, -15, 0],
+            rotate: [0, 10, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-20 left-20 text-white/20"
+        >
+          <BookOpen className="w-16 h-16" />
+        </motion.div>
+        <motion.div
+          animate={{ 
+            y: [0, -20, 0],
+            rotate: [0, -8, 0],
+            scale: [1, 1.2, 1]
+          }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+          className="absolute top-32 right-32 text-white/25"
+        >
+          <Heart className="w-12 h-12" />
+        </motion.div>
+        <motion.div
+          animate={{ 
+            y: [0, -12, 0],
+            x: [0, 10, 0],
+            rotate: [0, 5, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          className="absolute bottom-40 left-1/3 text-white/15"
+        >
+          <Library className="w-18 h-18" />
+        </motion.div>
+        <motion.div
+          animate={{ 
+            y: [0, -18, 0],
+            scale: [1, 1.3, 1],
+            rotate: [0, 360]
+          }}
+          transition={{ 
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 3
+          }}
+          className="absolute top-1/4 right-1/4 text-white/20"
+        >
+          <Star className="w-14 h-14" />
+        </motion.div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+            className="mb-8"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 5, -5, 0],
+                scale: [1, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="flex items-center justify-center gap-6 mb-8"
+            >
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl">
+                <Library className="w-10 h-10 text-white" />
+              </div>
+              <motion.h1
+                animate={{ 
+                  textShadow: [
+                    "0 0 20px rgba(255,255,255,0.5)",
+                    "0 0 30px rgba(255,255,255,0.8)", 
+                    "0 0 20px rgba(255,255,255,0.5)"
+                  ]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="text-5xl md:text-7xl font-bold text-white"
+              >
+                {title || "Digital Library"}
+              </motion.h1>
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="text-xl md:text-3xl text-sky-100 font-medium max-w-3xl mx-auto leading-relaxed"
+            >
+              {subtitle || "Jelajahi ribuan koleksi buku digital terbaik dengan teknologi modern"}
+            </motion.p>
+          </motion.div>
+
+          {/* Animated Stats Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto"
+          >
+            {/* Total Koleksi */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="bg-white/15 backdrop-blur-md border-white/30 text-white hover:bg-white/20 transition-all duration-300 shadow-2xl">
+                <CardContent className="p-6 text-center">
+                  <motion.div
+ 
