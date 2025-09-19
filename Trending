@@ -1,0 +1,32 @@
+import React, { useState, useEffect } from "react";
+import { Book } from "@/entities/all";
+import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, Fire, Eye, Star, BookOpen } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import AnimatedHeader from "../components/shared/AnimatedHeader";
+
+export default function TrendingPage() {
+  const [trendingBooks, setTrendingBooks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadTrendingBooks();
+  }, []);
+
+  const loadTrendingBooks = async () => {
+    setIsLoading(true);
+    try {
+      const books = await Book.list("-views", 50);
+      const trending = books
+        .filter(book => (book.views || 0) > 0)
+        .sort((a, b) => {
+          const scoreA = (b.views || 0) * 0.7 + (b.rating || 0) * 0.3;
+          const scoreB = (a.views || 0) * 0.7 + (a.rating || 0) * 0.3;
+          return scoreB - scoreA;
+        });
+      setTrendingBooks(trending);
+ 
