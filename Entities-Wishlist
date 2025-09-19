@@ -1,0 +1,32 @@
+{
+  "name": "Wishlist",
+  "type": "object",
+  "properties": {
+    "book_id": {
+      "type": "string",
+      "description": "ID buku yang diinginkan"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email pengguna"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Catatan pribadi tentang buku"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "rendah",
+        "sedang",
+        "tinggi"
+      ],
+      "default": "sedang",
+      "description": "Prioritas buku dalam wishlist"
+    }
+  },
+  "required": [
+    "book_id",
+    "user_email"
+  ]
+}
