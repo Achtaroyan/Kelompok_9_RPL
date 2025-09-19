@@ -1,0 +1,280 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { Book, Wishlist, User } from "@/entities/all";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Filter, Grid, List, Plus, Heart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+import AnimatedHeader from "../components/shared/AnimatedHeader";
+import BookGrid from "../components/books/BookGrid";
+import BookList from "../components/books/BookList";
+import BookDetail from "../components/books/BookDetail";
+
+export default function BooksPage() {
+  const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("all");
+  const [selectedBookType, setSelectedBookType] = useState("all");
+  const [viewMode, setViewMode] = useState("grid");
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    loadBooks();
+    loadCurrentUser();
+  }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const user = await User.me();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error("User not logged in:", error);
+    }
+  };
+
+  const filterBooks = useCallback(() => {
+    let filtered = books;
+
+    if (searchQuery) {
+      filtered = filtered.filter(book => 
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.publisher.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedTopic !== "all") {
+      filtered = filtered.filter(book => book.topic === selectedTopic);
+    }
+
+    if (selectedBookType !== "all") {
+      filtered = filtered.filter(book => book.book_type === selectedBookType);
+    }
+
+    setFilteredBooks(filtered);
+  }, [books, searchQuery, selectedTopic, selectedBookType]);
+
+  useEffect(() => {
+    filterBooks();
+  }, [filterBooks]);
+
+  const loadBooks = async () => {
+    setIsLoading(true);
+    try {
+      const data = await Book.list("-created_date", 200);
+      setBooks(data);
+    } catch (error) {
+      console.error("Error loading books:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const updateBookViews = async (bookId) => {
+    try {
+      const book = books.find(b => b.id === bookId);
+      if (book) {
+        await Book.update(bookId, { views: (book.views || 0) + 1 });
+        loadBooks();
+      }
+    } catch (error) {
+      console.error("Error updating book views:", error);
+    }
+  };
+
+  const addToWishlist = async (book) => {
+    if (!currentUser) return;
+    
+    try {
+      await Wishlist.create({
+        book_id: book.id,
+        user_email: currentUser.email,
+        priority: "sedang"
+      });
+      
+      // Update wishlist count
+      await Book.update(book.id, { 
+        wishlist_count: (book.wishlist_count || 0) + 1 
+      });
+      
+      loadBooks();
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50">
+      <AnimatedHeader 
+        title="Katalog Buku Digital"
+        subtitle="Jelajahi ribuan koleksi buku berkualitas premium dari berbagai kategori"
+      />
+      
+      <div className="p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                  className="w-12 h-12 bg-gradient-to-r from-sky-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg"
+                >
+                  <Search className="w-6 h-6 text-white" />
+                </motion.div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                    Eksplorasi Koleksi
+                  </h2>
+                  <p className="text-gray-600 mt-1">Temukan buku impian dari {books.length} koleksi premium</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <Link to={createPageUrl("AddBook")}>
+                  <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Tambah Buku
+                  </Button>
+                </Link>
+                
+                <Tabs value={viewMode} onValueChange={setViewMode}>
+                  <TabsList className="bg-sky-100 border border-sky-200">
+                    <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-white">
+                      <Grid className="w-4 h-4" />
+                      Grid
+                    </TabsTrigger>
+                    <TabsTrigger value="list" className="flex items-center gap-2 data-[state=active]:bg-white">
+                      <List className="w-4 h-4" />
+                      List
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
+
+            {/* Search and Filters */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-sky-100 mb-8"
+            >
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-sky-400 w-5 h-5" />
+                  <Input
+                    placeholder="Cari judul, penulis, penerbit, atau deskripsi buku..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 border-sky-200 focus:border-sky-400 bg-white h-12 text-lg"
+                  />
+                </div>
+                
+                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                  <SelectTrigger className="w-full md:w-48 border-sky-200 focus:border-sky-400 bg-white h-12">
+                    <SelectValue placeholder="Kategori" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Kategori</SelectItem>
+                    <SelectItem value="fiksi">Fiksi</SelectItem>
+                    <SelectItem value="non_fiksi">Non Fiksi</SelectItem>
+                    <SelectItem value="sains">Sains</SelectItem>
+                    <SelectItem value="teknologi">Teknologi</SelectItem>
+                    <SelectItem value="sejarah">Sejarah</SelectItem>
+                    <SelectItem value="biografi">Biografi</SelectItem>
+                    <SelectItem value="filosofi">Filosofi</SelectItem>
+                    <SelectItem value="seni">Seni</SelectItem>
+                    <SelectItem value="bisnis">Bisnis</SelectItem>
+                    <SelectItem value="pendidikan">Pendidikan</SelectItem>
+                    <SelectItem value="anak">Anak</SelectItem>
+                    <SelectItem value="remaja">Remaja</SelectItem>
+                    <SelectItem value="agama">Agama</SelectItem>
+                    <SelectItem value="kesehatan">Kesehatan</SelectItem>
+                    <SelectItem value="hukum">Hukum</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedBookType} onValueChange={setSelectedBookType}>
+                  <SelectTrigger className="w-full md:w-48 border-sky-200 focus:border-sky-400 bg-white h-12">
+                    <SelectValue placeholder="Tipe Buku" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Tipe</SelectItem>
+                    <SelectItem value="fisik">Buku Fisik</SelectItem>
+                    <SelectItem value="ebook">E-Book</SelectItem>
+                    <SelectItem value="audiobook">Audio Book</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-sky-100">
+                <p className="text-sm text-sky-600 font-medium">
+                  Menampilkan {filteredBooks.length} dari {books.length} buku tersedia
+                </p>
+                {searchQuery && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSearchQuery("")}
+                    className="text-sky-600 border-sky-200 hover:bg-sky-50"
+                  >
+                    Reset Pencarian
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {viewMode === "grid" ? (
+              <BookGrid 
+                books={filteredBooks} 
+                isLoading={isLoading}
+                onBookClick={(bookId) => {
+                  updateBookViews(bookId);
+                  const book = books.find(b => b.id === bookId);
+                  setSelectedBook(book);
+                }}
+                onAddToWishlist={addToWishlist}
+              />
+            ) : (
+              <BookList 
+                books={filteredBooks} 
+                isLoading={isLoading}
+                onBookClick={(bookId) => {
+                  updateBookViews(bookId);
+                  const book = books.find(b => b.id === bookId);
+                  setSelectedBook(book);
+                }}
+                onAddToWishlist={addToWishlist}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Book Detail Modal */}
+      <BookDetail 
+        book={selectedBook}
+        isOpen={!!selectedBook}
+        onClose={() => setSelectedBook(null)}
+        onAddToWishlist={addToWishlist}
+        currentUser={currentUser}
+      />
+    </div>
+  );
+}
