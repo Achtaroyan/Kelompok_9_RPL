@@ -1,0 +1,211 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { UploadFile } from "@/integrations/Core";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Upload, Image, Link as LinkIcon, BookOpen, Check } from "lucide-react";
+
+export default function BookFormCover({ bookData, updateBookData }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState("url"); // "url" or "upload"
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const { file_url } = await UploadFile({ file });
+      updateBookData("cover_url", file_url);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+    setIsUploading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Upload Method Selection */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-4"
+      >
+        <Label className="flex items-center gap-2 text-sm font-semibold">
+          <Image className="w-4 h-4 text-purple-600" />
+          Cover Buku (Opsional)
+        </Label>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card 
+            className={`cursor-pointer transition-all duration-200 ${
+              uploadMethod === "url" ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-blue-300"
+            }`}
+            onClick={() => setUploadMethod("url")}
+          >
+            <CardContent className="p-4 text-center">
+              <LinkIcon className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <h4 className="font-medium">Link URL</h4>
+              <p className="text-sm text-gray-600">Masukkan URL gambar cover</p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className={`cursor-pointer transition-all duration-200 ${
+              uploadMethod === "upload" ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-300"
+            }`}
+            onClick={() => setUploadMethod("upload")}
+          >
+            <CardContent className="p-4 text-center">
+              <Upload className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+              <h4 className="font-medium">Upload File</h4>
+              <p className="text-sm text-gray-600">Upload gambar dari device</p>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* URL Input */}
+      {uploadMethod === "url" && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="cover_url">URL Cover Buku</Label>
+          <Input
+            id="cover_url"
+            type="url"
+            placeholder="https://example.com/cover-image.jpg"
+            value={bookData.cover_url}
+            onChange={(e) => updateBookData("cover_url", e.target.value)}
+            className="border-blue-200 focus:border-blue-400"
+          />
+        </motion.div>
+      )}
+
+      {/* File Upload */}
+      {uploadMethod === "upload" && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
+          <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="cover-upload"
+              disabled={isUploading}
+            />
+            <label htmlFor="cover-upload" className="cursor-pointer">
+              <Upload className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <p className="text-lg font-medium text-gray-700 mb-2">
+                {isUploading ? "Mengupload..." : "Pilih atau Drop Gambar Cover"}
+              </p>
+              <p className="text-sm text-gray-500">
+                PNG, JPG, JPEG hingga 10MB
+              </p>
+            </label>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Preview */}
+      {bookData.cover_url && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          <Label className="flex items-center gap-2 text-sm font-semibold text-green-600">
+            <Check className="w-4 h-4" />
+            Preview Cover
+          </Label>
+          <div className="flex flex-col md:flex-row gap-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex-shrink-0">
+              <div className="w-32 h-44 bg-gradient-to-br from-blue-200 to-indigo-300 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  src={bookData.cover_url} 
+                  alt="Cover Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full flex items-center justify-center" style={{display: 'none'}}>
+                  <BookOpen className="w-8 h-8 text-blue-600" />
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-lg mb-2">{bookData.title || "Judul Buku"}</h4>
+              <p className="text-gray-600 mb-1">oleh {bookData.author || "Penulis"}</p>
+              <p className="text-sm text-gray-500 mb-3">{bookData.publisher || "Penerbit"}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-emerald-600">
+                  Rp {bookData.price.toLocaleString('id-ID')}
+                </span>
+                {bookData.condition && (
+                  <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {bookData.condition.replace(/_/g, ' ')}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200"
+      >
+        <h4 className="font-semibold text-blue-900 mb-4">Ringkasan Buku</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="font-medium text-gray-700">Judul:</span> {bookData.title || "-"}
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Penulis:</span> {bookData.author || "-"}
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Penerbit:</span> {bookData.publisher || "-"}
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Harga:</span> Rp {bookData.price.toLocaleString('id-ID')}
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Kategori:</span> {bookData.topic?.replace(/_/g, ' ') || "-"}
+          </div>
+          <div>
+            <span className="font-medium text-gray-700">Stok:</span> {bookData.stock} buku
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="bg-emerald-50 rounded-lg p-4 border border-emerald-200"
+      >
+        <p className="text-sm text-emerald-700">
+          <strong>Siap untuk disimpan!</strong> Pastikan semua informasi sudah benar sebelum menyimpan buku ke perpustakaan.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
