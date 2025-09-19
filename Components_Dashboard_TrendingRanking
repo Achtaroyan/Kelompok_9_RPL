@@ -1,0 +1,38 @@
+import React from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Crown, Star, TrendingUp } from "lucide-react";
+
+export default function TrendingRanking({ books, isLoading }) {
+  const topRankedBooks = books
+    .filter(book => book.rating && book.rating > 0)
+    .sort((a, b) => {
+      // Sort by rating first, then by views
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return (b.views || 0) - (a.views || 0);
+    })
+    .slice(0, 5);
+
+  const getRankIcon = (index) => {
+    switch(index) {
+      case 0: return <Crown className="w-4 h-4 text-yellow-500" />;
+      case 1: return <Trophy className="w-4 h-4 text-gray-400" />;
+      case 2: return <Trophy className="w-4 h-4 text-amber-600" />;
+      default: return <Star className="w-4 h-4 text-blue-500" />;
+    }
+  };
+
+  const getRankBadge = (index) => {
+    switch(index) {
+      case 0: return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case 1: return "bg-gray-100 text-gray-800 border-gray-200"; 
+      case 2: return "bg-amber-100 text-amber-800 border-amber-200";
+      default: return "bg-blue-100 text-blue-800 border-blue-200";
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+ 
