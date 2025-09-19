@@ -1,0 +1,112 @@
+import React from "react";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, User, FileText, Tag } from "lucide-react";
+
+export default function BookFormBasic({ bookData, updateBookData }) {
+  return (
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-2"
+      >
+        <Label htmlFor="title" className="flex items-center gap-2 text-sm font-semibold">
+          <BookOpen className="w-4 h-4 text-blue-600" />
+          Judul Buku *
+        </Label>
+        <Input
+          id="title"
+          placeholder="Masukkan judul buku..."
+          value={bookData.title}
+          onChange={(e) => updateBookData("title", e.target.value)}
+          className="text-lg border-blue-200 focus:border-blue-400"
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-2"
+      >
+        <Label htmlFor="author" className="flex items-center gap-2 text-sm font-semibold">
+          <User className="w-4 h-4 text-emerald-600" />
+          Penulis/Pengarang *
+        </Label>
+        <Input
+          id="author"
+          placeholder="Masukkan nama penulis..."
+          value={bookData.author}
+          onChange={(e) => updateBookData("author", e.target.value)}
+          className="border-blue-200 focus:border-blue-400"
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3 }}
+        className="space-y-2"
+      >
+        <Label htmlFor="description" className="flex items-center gap-2 text-sm font-semibold">
+          <FileText className="w-4 h-4 text-purple-600" />
+          Deskripsi Buku *
+        </Label>
+        <Textarea
+          id="description"
+          placeholder="Masukkan deskripsi lengkap buku, sinopsis, atau ringkasan..."
+          value={bookData.description}
+          onChange={(e) => updateBookData("description", e.target.value)}
+          className="min-h-32 border-blue-200 focus:border-blue-400"
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4 }}
+        className="space-y-2"
+      >
+        <Label htmlFor="topic" className="flex items-center gap-2 text-sm font-semibold">
+          <Tag className="w-4 h-4 text-orange-600" />
+          Kategori/Topik Buku *
+        </Label>
+        <Select value={bookData.topic} onValueChange={(value) => updateBookData("topic", value)}>
+          <SelectTrigger className="border-blue-200 focus:border-blue-400">
+            <SelectValue placeholder="Pilih kategori buku" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="fiksi">Fiksi</SelectItem>
+            <SelectItem value="non_fiksi">Non Fiksi</SelectItem>
+            <SelectItem value="sains">Sains & Teknologi</SelectItem>
+            <SelectItem value="teknologi">Teknologi</SelectItem>
+            <SelectItem value="sejarah">Sejarah</SelectItem>
+            <SelectItem value="biografi">Biografi</SelectItem>
+            <SelectItem value="filosofi">Filosofi</SelectItem>
+            <SelectItem value="seni">Seni & Budaya</SelectItem>
+            <SelectItem value="bisnis">Bisnis & Ekonomi</SelectItem>
+            <SelectItem value="pendidikan">Pendidikan</SelectItem>
+            <SelectItem value="anak">Buku Anak</SelectItem>
+            <SelectItem value="remaja">Buku Remaja</SelectItem>
+          </SelectContent>
+        </Select>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="bg-blue-50 rounded-lg p-4 border border-blue-200"
+      >
+        <p className="text-sm text-blue-700">
+          <strong>Tips:</strong> Pastikan informasi yang Anda masukkan akurat. Deskripsi yang menarik akan membantu pembaca memahami isi buku dengan lebih baik.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
