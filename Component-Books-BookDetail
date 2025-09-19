@@ -1,0 +1,271 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  BookOpen, 
+  User, 
+  Calendar, 
+  Building2, 
+  Hash, 
+  FileText, 
+  DollarSign, 
+  Package, 
+  Star, 
+  Eye, 
+  Heart,
+  X,
+  Globe
+} from "lucide-react";
+
+export default function BookDetail({ book, isOpen, onClose, onAddToWishlist, currentUser }) {
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+
+  if (!book) return null;
+
+  const handleAddToWishlist = async () => {
+    if (!currentUser || isAddingToWishlist) return;
+    
+    setIsAddingToWishlist(true);
+    try {
+      await onAddToWishlist(book);
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+    }
+    setIsAddingToWishlist(false);
+  };
+
+  const getStockColor = (stock) => {
+    if (stock === 0) return "bg-red-100 text-red-800";
+    if (stock <= 5) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
+  };
+
+  const getConditionColor = (condition) => {
+    switch (condition) {
+      case "baru": return "bg-emerald-100 text-emerald-800";
+      case "bekas_baik": return "bg-blue-100 text-blue-800";
+      case "bekas_cukup": return "bg-orange-100 text-orange-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <DialogHeader className="pb-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">
+                      {book.title}
+                    </DialogTitle>
+                    <DialogDescription className="text-lg text-gray-600">
+                      oleh {book.author}
+                    </DialogDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Book Cover & Basic Actions */}
+                <div className="space-y-6">
+                  <div className="aspect-[3/4] bg-gradient-to-br from-blue-200 to-indigo-300 rounded-lg flex items-center justify-center overflow-hidden shadow-lg">
+                    {book.cover_url ? (
+                      <img 
+                        src={book.cover_url} 
+                        alt={book.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BookOpen className="w-16 h-16 text-blue-600" />
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                      size="lg"
+                    >
+                      Pinjam Buku
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+                      onClick={handleAddToWishlist}
+                      disabled={!currentUser || isAddingToWishlist}
+                    >
+                      <Heart className="w-4 h-4 mr-2" />
+                      {isAddingToWishlist ? "Menambah..." : "Tambah ke Wishlist"}
+                    </Button>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <h4 className="font-semibold text-gray-900">Statistik</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <Eye className="w-4 h-4 text-gray-500" />
+                          Views
+                        </span>
+                        <span className="font-medium">{book.views || 0}</span>
+                      </div>
+                      {book.rating > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <Star className="w-4 h-4 text-yellow-500" />
+                            Rating
+                          </span>
+                          <span className="font-medium">{book.rating}/5</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <Heart className="w-4 h-4 text-rose-500" />
+                          Wishlist
+                        </span>
+                        <span className="font-medium">{book.wishlist_count || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Book Details */}
+                <div className="md:col-span-2 space-y-6">
+                  {/* Description */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Deskripsi</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {book.description}
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  {/* Book Information Grid */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Informasi Buku</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <User className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Penulis</p>
+                            <p className="font-medium">{book.author}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Building2 className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Penerbit</p>
+                            <p className="font-medium">{book.publisher}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Tahun Terbit</p>
+                            <p className="font-medium">{book.published_year}</p>
+                          </div>
+                        </div>
+
+                        {book.isbn && (
+                          <div className="flex items-center gap-3">
+                            <Hash className="w-5 h-5 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-500">ISBN</p>
+                              <p className="font-medium font-mono text-sm">{book.isbn}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-4">
+                        {book.pages > 0 && (
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-500">Jumlah Halaman</p>
+                              <p className="font-medium">{book.pages} halaman</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                          <DollarSign className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Harga</p>
+                            <p className="font-medium text-emerald-600 text-lg">
+                              Rp {book.price.toLocaleString('id-ID')}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Package className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Stok Tersedia</p>
+                            <Badge className={`${getStockColor(book.stock)} mt-1`}>
+                              {book.stock === 0 ? "Habis" : `${book.stock} buku`}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Globe className="w-5 h-5 text-gray-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Bahasa</p>
+                            <p className="font-medium capitalize">
+                              {book.language?.replace(/_/g, ' ')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Additional Info */}
+                  <div className="flex flex-wrap gap-3">
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                      {book.topic?.replace(/_/g, ' ')}
+                    </Badge>
+                    <Badge className={`${getConditionColor(book.condition)} border`}>
+                      Kondisi {book.condition?.replace(/_/g, ' ')}
+                    </Badge>
+                    <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                      {book.book_type?.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </AnimatePresence>
+  );
+}
