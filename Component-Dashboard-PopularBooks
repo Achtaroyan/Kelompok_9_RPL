@@ -1,0 +1,38 @@
+import React from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Eye, Star, TrendingUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function PopularBooks({ books, isLoading }) {
+  const popularBooks = books
+    .filter(book => book.views > 0)
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .slice(0, 5);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 }}
+    >
+      <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-300 border-blue-100">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            Buku Terpopuler
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array(5).fill(0).map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="w-12 h-16 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+ 
