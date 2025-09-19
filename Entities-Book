@@ -1,0 +1,141 @@
+{
+  "name": "Book",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Judul buku"
+    },
+    "author": {
+      "type": "string",
+      "description": "Penulis buku"
+    },
+    "writer": {
+      "type": "string",
+      "description": "Writer/pengarang (jika berbeda dari author)"
+    },
+    "creator": {
+      "type": "string",
+      "description": "Pembuat/kreator buku"
+    },
+    "description": {
+      "type": "string",
+      "description": "Deskripsi lengkap buku"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "URL gambar cover buku"
+    },
+    "topic": {
+      "type": "string",
+      "enum": [
+        "fiksi",
+        "non_fiksi",
+        "sains",
+        "teknologi",
+        "sejarah",
+        "biografi",
+        "filosofi",
+        "seni",
+        "bisnis",
+        "pendidikan",
+        "anak",
+        "remaja",
+        "agama",
+        "kesehatan",
+        "hukum"
+      ],
+      "description": "Topik/kategori buku"
+    },
+    "book_type": {
+      "type": "string",
+      "enum": [
+        "fisik",
+        "ebook",
+        "audiobook",
+        "hybrid"
+      ],
+      "default": "fisik",
+      "description": "Tipe buku"
+    },
+    "stock": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Jumlah stok buku"
+    },
+    "isbn": {
+      "type": "string",
+      "description": "Nomor ISBN buku"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Penerbit buku"
+    },
+    "published_year": {
+      "type": "integer",
+      "description": "Tahun terbit"
+    },
+    "pages": {
+      "type": "integer",
+      "description": "Jumlah halaman"
+    },
+    "price": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Harga buku dalam Rupiah"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "bahasa_indonesia",
+        "english",
+        "mandarin",
+        "arabic",
+        "other"
+      ],
+      "default": "bahasa_indonesia",
+      "description": "Bahasa buku"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "baru",
+        "bekas_baik",
+        "bekas_cukup"
+      ],
+      "default": "baru",
+      "description": "Kondisi buku"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Rating buku (0-5)"
+    },
+    "views": {
+      "type": "integer",
+      "default": 0,
+      "description": "Jumlah kali dilihat"
+    },
+    "borrowed_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Jumlah kali dipinjam"
+    },
+    "wishlist_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Jumlah kali ditambahkan ke wishlist"
+    }
+  },
+  "required": [
+    "title",
+    "author",
+    "description",
+    "topic",
+    "stock",
+    "publisher",
+    "price",
+    "book_type"
+  ]
+}
