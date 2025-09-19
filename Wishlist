@@ -1,0 +1,241 @@
+
+import React, { useState, useEffect } from "react";
+import { Book, Wishlist, User } from "@/entities/all";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Trash2, BookOpen, Star, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import HeroHeader from "../components/shared/HeroHeader";
+
+export default function WishlistPage() {
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [books, setBooks] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadWishlistData();
+  }, []);
+
+  const loadWishlistData = async () => {
+    setIsLoading(true);
+    try {
+      const user = await User.me();
+      setCurrentUser(user);
+      
+      const wishlistData = await Wishlist.filter({ user_email: user.email }, "-created_date");
+      setWishlistItems(wishlistData);
+
+      // Load book details for each wishlist item
+      const bookIds = wishlistData.map(item => item.book_id);
+      const bookPromises = bookIds.map(id => Book.get(id).catch(() => null));
+      const bookData = await Promise.all(bookPromises);
+      
+      const bookMap = {};
+      bookData.forEach(book => {
+        if (book) bookMap[book.id] = book;
+      });
+      setBooks(bookMap);
+    } catch (error) {
+      console.error("Error loading wishlist:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const removeFromWishlist = async (wishlistId) => {
+    try {
+      await Wishlist.delete(wishlistId);
+      loadWishlistData();
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "tinggi": return "bg-red-100 text-red-800 border-red-200";
+      case "sedang": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "rendah": return "bg-green-100 text-green-800 border-green-200";
+      default: return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+        <HeroHeader />
+        <div className="p-4 md:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid gap-6">
+              {Array(3).fill(0).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="flex gap-4">
+                      <Skeleton className="w-20 h-28 rounded-lg" />
+                      <div className="flex-1 space-y-3">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
+      <HeroHeader />
+      
+      <div className="p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-rose-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                  Koleksi Impian Anda
+                </h2>
+                <p className="text-gray-600 mt-1">Kelola dan pantau buku-buku yang ingin Anda baca ({wishlistItems.length} buku)</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {wishlistItems.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-16"
+            >
+              <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Heart className="w-12 h-12 text-blue-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Wishlist Masih Kosong</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                Mulai tambahkan buku-buku favorit Anda ke wishlist untuk memudahkan pelacakan
+              </p>
+              <Button 
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                onClick={() => window.location.href = '/books'}
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Jelajahi Katalog Buku
+              </Button>
+            </motion.div>
+          ) : (
+            <div className="space-y-6">
+              <AnimatePresence>
+                {wishlistItems.map((item, index) => {
+                  const book = books[item.book_id];
+                  if (!book) return null;
+
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 border-blue-100">
+                        <CardContent className="p-6">
+                          <div className="flex gap-6">
+                            <div className="flex-shrink-0">
+                              <div className="w-24 h-32 bg-gradient-to-br from-blue-200 to-indigo-300 rounded-lg flex items-center justify-center shadow-md">
+                                {book.cover_url ? (
+                                  <img 
+                                    src={book.cover_url} 
+                                    alt={book.title}
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
+                                ) : (
+                                  <BookOpen className="w-8 h-8 text-blue-600" />
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h3 className="text-xl font-bold text-gray-900 mb-1 truncate">
+                                    {book.title}
+                                  </h3>
+                                  <p className="text-gray-600 text-sm mb-2">oleh {book.author}</p>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                      {book.topic?.replace(/_/g, ' ')}
+                                    </Badge>
+                                    <Badge 
+                                      className={getPriorityColor(item.priority)}
+                                    >
+                                      Prioritas {item.priority}
+                                    </Badge>
+                                    {book.rating && (
+                                      <div className="flex items-center gap-1">
+                                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                                        <span className="text-sm font-medium">{book.rating}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeFromWishlist(item.id)}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </Button>
+                              </div>
+
+                              <p className="text-gray-700 text-sm line-clamp-2 mb-4">
+                                {book.description}
+                              </p>
+
+                              {item.notes && (
+                                <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                                  <p className="text-sm text-blue-800">
+                                    <span className="font-medium">Catatan: </span>
+                                    {item.notes}
+                                  </p>
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between text-sm text-gray-500">
+                                <span>Ditambahkan {new Date(item.created_date).toLocaleDateString('id-ID')}</span>
+                                <div className="flex items-center gap-4">
+                                  <span>Stok: {book.stock} buku</span>
+                                  {book.published_year && (
+                                    <span>Terbit: {book.published_year}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
