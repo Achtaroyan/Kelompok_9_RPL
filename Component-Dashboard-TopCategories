@@ -1,0 +1,39 @@
+import React from 'react';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tag, BarChart3 } from "lucide-react";
+
+export default function TopCategories({ books, isLoading }) {
+  const categoryStats = books.reduce((acc, book) => {
+    const category = book.topic || 'lainnya';
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const sortedCategories = Object.entries(categoryStats)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 6);
+
+  const categoryColors = [
+    "bg-blue-100 text-blue-800",
+    "bg-green-100 text-green-800", 
+    "bg-purple-100 text-purple-800",
+    "bg-orange-100 text-orange-800",
+    "bg-pink-100 text-pink-800",
+    "bg-indigo-100 text-indigo-800"
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.3 }}
+    >
+      <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all duration-300 border-blue-100">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-white" />
+ 
+ 
