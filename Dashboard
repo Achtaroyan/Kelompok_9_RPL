@@ -1,0 +1,96 @@
+import React, { useState, useEffect } from "react";
+import { Book, Wishlist } from "@/entities/all";
+import { motion } from "framer-motion";
+import { TrendingUp, BookOpen, Heart, Users, Star, Eye, Trophy, Crown, BarChart3 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+import AnimatedHeader from "../components/shared/AnimatedHeader";
+import StatsChart from "../components/dashboard/StatsChart";
+import PopularBooks from "../components/dashboard/PopularBooks";
+import TopCategories from "../components/dashboard/TopCategories";
+import RecentActivity from "../components/dashboard/RecentActivity";
+import TrendingRanking from "../components/dashboard/TrendingRanking";
+
+export default function Dashboard() {
+  const [books, setBooks] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      const [booksData, wishlistData] = await Promise.all([
+        Book.list("-views", 100),
+        Wishlist.list("-created_date", 50)
+      ]);
+      setBooks(booksData);
+      setWishlistItems(wishlistData);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50">
+      <AnimatedHeader 
+        title="Dashboard Analytics"
+        subtitle="Pantau statistik dan aktivitas perpustakaan digital Anda"
+      />
+      
+      <div className="p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="w-14 h-14 bg-gradient-to-r from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl"
+              >
+                <BarChart3 className="w-7 h-7 text-white" />
+              </motion.div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                  Analytics & Insights
+                </h2>
+                <p className="text-gray-600 mt-1 text-lg">Detail komprehensif tentang performa koleksi</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Charts Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-12"
+          >
+            <StatsChart books={books} isLoading={isLoading} />
+          </motion.div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            <div className="lg:col-span-2 space-y-8">
+              <PopularBooks books={books} isLoading={isLoading} />
+              <RecentActivity books={books} wishlistItems={wishlistItems} isLoading={isLoading} />
+            </div>
+
+            <div className="space-y-8">
+              <TopCategories books={books} isLoading={isLoading} />
+              <TrendingRanking books={books} isLoading={isLoading} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
