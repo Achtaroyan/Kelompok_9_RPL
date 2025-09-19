@@ -1,0 +1,112 @@
+import React from "react";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Building2, Hash, Calendar, FileText, DollarSign, Globe, Package, Star } from "lucide-react";
+
+export default function BookFormDetails({ bookData, updateBookData }) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="publisher" className="flex items-center gap-2 text-sm font-semibold">
+            <Building2 className="w-4 h-4 text-indigo-600" />
+            Penerbit *
+          </Label>
+          <Input
+            id="publisher"
+            placeholder="Nama penerbit..."
+            value={bookData.publisher}
+            onChange={(e) => updateBookData("publisher", e.target.value)}
+            className="border-blue-200 focus:border-blue-400"
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="isbn" className="flex items-center gap-2 text-sm font-semibold">
+            <Hash className="w-4 h-4 text-green-600" />
+            ISBN
+          </Label>
+          <Input
+            id="isbn"
+            placeholder="978-xxx-xxx-xxx-x"
+            value={bookData.isbn}
+            onChange={(e) => updateBookData("isbn", e.target.value)}
+            className="border-blue-200 focus:border-blue-400"
+          />
+        </motion.div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="published_year" className="flex items-center gap-2 text-sm font-semibold">
+            <Calendar className="w-4 h-4 text-purple-600" />
+            Tahun Terbit
+          </Label>
+          <Input
+            id="published_year"
+            type="number"
+            min="1900"
+            max={new Date().getFullYear()}
+            value={bookData.published_year}
+            onChange={(e) => updateBookData("published_year", parseInt(e.target.value))}
+            className="border-blue-200 focus:border-blue-400"
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="pages" className="flex items-center gap-2 text-sm font-semibold">
+            <FileText className="w-4 h-4 text-orange-600" />
+            Jumlah Halaman
+          </Label>
+          <Input
+            id="pages"
+            type="number"
+            min="1"
+            placeholder="0"
+            value={bookData.pages}
+            onChange={(e) => updateBookData("pages", parseInt(e.target.value))}
+            className="border-blue-200 focus:border-blue-400"
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="price" className="flex items-center gap-2 text-sm font-semibold">
+            <DollarSign className="w-4 h-4 text-emerald-600" />
+            Harga (Rp) *
+          </Label>
+          <Input
+            id="price"
+            type="number"
+            min="0"
+            step="1000"
+            placeholder="0"
+            value={bookData.price}
+            onChange={(e) => updateBookData("price", parseFloat(e.target.value))}
+ 
